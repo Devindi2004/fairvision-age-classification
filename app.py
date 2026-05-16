@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ---------------- CUSTOM CSS (MATCHING THE IMAGE) ----------------
+# ---------------- CUSTOM CSS (WITH RESPONSIVE IMAGE CONTROL) ----------------
 st.markdown("""
 <style>
 /* Global styles and full responsive container */
@@ -48,6 +48,24 @@ st.markdown("""
     border-radius: 12px;
     box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.25);
     margin-bottom: 24px;
+}
+
+/* --- IMAGE CENTER & SIZE CONTROL --- */
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+/* This forces the Streamlit image element inside to obey the sizing */
+.image-container div[data-testid="stImage"] img {
+    max-width: 260px !important; /* Image එක ලස්සනට කුඩා මට්ටමක තබා ගැනීමට */
+    height: auto !important;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Prediction Header Box (Teal/Blue Gradient from Image) */
@@ -102,7 +120,7 @@ st.markdown("""
 }
 
 .custom-progress-bar-fill {
-    background-color: #4b6584; /* matching the image progress color */
+    background-color: #4b6584;
     height: 100%;
     border-radius: 6px;
 }
@@ -183,19 +201,19 @@ with col1:
     uploaded_file = st.file_uploader(
         "Choose an image",
         type=["jpg", "jpeg", "png"],
-        label_visibility="collapsed" # Hiding default label for a cleaner UI
+        label_visibility="collapsed"
     )
     
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
-        st.write("")
-        st.image(
-            image,
-            use_container_width=True
-        )
-        st.caption(f"Uploaded: {uploaded_file.name}")
+        
+        # Image එක පාලනය කළ හැකි Div එකක් ඇතුලට දමා ඇත
+        st.markdown('<div class="image-container">', unsafe_allow_html=True)
+        st.image(image, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        st.markdown(f'<div style="text-align:center; color:#94a3b8; font-size:13px;">Uploaded: {uploaded_file.name}</div>', unsafe_allow_html=True)
     else:
-        # Placeholder styling when empty
         st.info("Please upload a portrait image to proceed.")
         
     st.markdown('</div>', unsafe_allow_html=True)
@@ -206,8 +224,7 @@ with col2:
     st.markdown('<div class="section-header">📊 Prediction Results</div>', unsafe_allow_html=True)
     
     if uploaded_file is not None:
-        # --- FIXED/MOCK PREDICTIONS (MATCHING YOUR IMAGE PRECISELY) ---
-        # If you want it random dynamic like before, you can switch back to the dirichlet distribution.
+        # Mock Results matching the UI image
         top3_results = [
             {"age": "20-29", "prob": 0.8534},
             {"age": "30-39", "prob": 0.0912},
@@ -217,7 +234,7 @@ with col2:
         predicted_age = top3_results[0]["age"]
         confidence = top3_results[0]["prob"] * 100
         
-        # Main Prediction Indicator Box
+        # Main Prediction Box
         st.markdown(f"""
         <div class="prediction-box">
             <div class="label">Predicted Age Group</div>
@@ -228,7 +245,7 @@ with col2:
         
         st.markdown('<div style="font-size:16px; font-weight:600; margin-bottom:15px;">Top 3 Predictions</div>', unsafe_allow_html=True)
         
-        # Displaying Custom Progress Bars styled like the Image
+        # Progress Bars
         for res in top3_results:
             percentage = res["prob"] * 100
             st.markdown(f"""
@@ -248,7 +265,7 @@ with col2:
         
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- RESPONSIBLE AI NOTICE (FULL WIDTH BOTTOM) ----------------
+# ---------------- RESPONSIBLE AI NOTICE ----------------
 st.markdown(f"""
 <div class="notice-box">
     <div class="notice-title">⚖ Responsible AI Notice</div>
