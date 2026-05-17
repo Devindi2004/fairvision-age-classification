@@ -1,6 +1,7 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
+import time
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -13,262 +14,403 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
-
-/* ---- BASE ---- */
-html, body, [class*="css"] {
-    font-family: 'Manrope', sans-serif;
-}
+/* ---------------- MAIN BACKGROUND ---------------- */
 
 .stApp {
-    background: linear-gradient(135deg, #0f172a 0%, #111827 100%);
-    background-attachment: fixed;
-}
-
-/* ---- HIDE STREAMLIT DEFAULTS ---- */
-#MainMenu, footer, header { visibility: hidden; }
-.block-container {
-    padding-top: 2rem;
-    padding-bottom: 4rem;
-    max-width: 1200px;
-}
-
-/* ---- TITLE ---- */
-.title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 90px;
-    font-weight: 400;
-    text-align: center;
+    background:
+        radial-gradient(circle at top left, rgba(37,99,235,0.15), transparent 25%),
+        radial-gradient(circle at bottom right, rgba(124,58,237,0.15), transparent 25%),
+        linear-gradient(135deg, #0f172a 0%, #111827 100%);
     color: white;
-    margin-top: 10px;
-    letter-spacing: 0.04em;
+    overflow-x: hidden;
+}
+
+/* ---------------- REMOVE STREAMLIT DEFAULTS ---------------- */
+
+#MainMenu {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+header {
+    visibility: hidden;
+}
+
+/* ---------------- HERO SECTION ---------------- */
+
+.hero-container {
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 30px;
+}
+
+.hero-badge {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 50px;
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: #93c5fd;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+.hero-title {
+    font-size: clamp(60px, 8vw, 110px);
+    font-weight: 900;
     line-height: 0.95;
-    background: linear-gradient(90deg, #f1f5f9, #a78bfa, #60a5fa);
+    margin-bottom: 15px;
+    letter-spacing: -2px;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, #60a5fa, #8b5cf6, #22d3ee);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
-/* ---- SUBTITLE ---- */
-.subtitle {
-    text-align: center;
-    color: #cbd5e1;
+.hero-subtitle {
     font-size: 20px;
-    margin-bottom: 30px;
-    font-weight: 300;
-    letter-spacing: 0.03em;
-}
-
-/* ---- CARD ---- */
-.card {
-    background-color: rgba(255,255,255,0.05);
-    padding: 25px;
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0px 4px 30px rgba(0,0,0,0.2);
+    color: #cbd5e1;
     margin-bottom: 20px;
-    border: 1px solid rgba(255,255,255,0.07);
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-.card:hover {
-    border-color: rgba(255,255,255,0.13);
-    box-shadow: 0px 8px 48px rgba(0,0,0,0.35);
 }
 
-/* ---- PREDICTION BOX ---- */
+.hero-tags {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.tag {
+    padding: 8px 16px;
+    border-radius: 50px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 13px;
+    color: #cbd5e1;
+}
+
+/* ---------------- STATS ---------------- */
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 15px;
+    margin-top: 25px;
+    margin-bottom: 35px;
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 25px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.stat-number {
+    font-size: 40px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #60a5fa, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* ---------------- GLASS CARD ---------------- */
+
+.glass-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    padding: 28px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    margin-bottom: 25px;
+}
+
+/* ---------------- SECTION TITLE ---------------- */
+
+.section-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+/* ---------------- IMAGE PREVIEW ---------------- */
+
+.image-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.image-wrapper img {
+    border-radius: 16px;
+    max-width: 260px !important;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ---------------- PREDICTION BOX ---------------- */
+
 .prediction-box {
     background: linear-gradient(135deg, #2563eb, #7c3aed);
-    padding: 20px;
-    border-radius: 18px;
-    color: white;
+    border-radius: 22px;
+    padding: 30px;
     text-align: center;
-    margin-top: 20px;
-    box-shadow: 0px 6px 25px rgba(0,0,0,0.3);
-    position: relative;
-    overflow: hidden;
-}
-.prediction-box::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 65% 20%, rgba(255,255,255,0.1), transparent 60%);
-    pointer-events: none;
-    border-radius: 18px;
-}
-.prediction-box h2 {
-    font-size: 13px !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.1em !important;
-    text-transform: uppercase !important;
-    opacity: 0.85 !important;
-    margin-bottom: 6px !important;
-}
-.prediction-box h1 {
-    font-family: 'Bebas Neue', sans-serif !important;
-    font-size: 80px !important;
-    font-weight: 400 !important;
-    line-height: 1 !important;
-    letter-spacing: 0.04em !important;
-    margin-bottom: 8px !important;
-    text-shadow: 0 4px 24px rgba(0,0,0,0.35) !important;
-}
-.prediction-box h3 {
-    font-size: 16px !important;
-    font-weight: 500 !important;
-    opacity: 0.9 !important;
-    font-family: 'Fira Code', monospace !important;
+    margin-bottom: 25px;
+    box-shadow: 0px 8px 30px rgba(0,0,0,0.35);
 }
 
-/* ---- STREAMLIT SUBHEADER ---- */
-.stApp h2 {
-    font-family: 'Manrope', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    color: #f1f5f9;
-    letter-spacing: -0.01em;
-    padding-bottom: 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+.prediction-label {
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.8);
+}
+
+.prediction-age {
+    font-size: 70px;
+    font-weight: 900;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.prediction-confidence {
+    font-size: 18px;
+    color: rgba(255,255,255,0.9);
+}
+
+/* ---------------- CUSTOM PROGRESS ---------------- */
+
+.progress-item {
     margin-bottom: 18px;
 }
 
-/* ---- FILE UPLOADER ---- */
-[data-testid="stFileUploader"] {
-    background: rgba(99,102,241,0.04);
-    border: 2px dashed rgba(99,102,241,0.32);
-    border-radius: 16px;
-    padding: 8px;
-    transition: all 0.25s;
-}
-[data-testid="stFileUploader"]:hover {
-    border-color: rgba(99,102,241,0.65);
-    background: rgba(99,102,241,0.08);
-}
-[data-testid="stFileUploader"] label {
-    color: #94a3b8 !important;
-    font-size: 14px !important;
-}
-
-/* ---- PROGRESS BAR ---- */
-[data-testid="stProgressBar"] > div {
-    background: rgba(255,255,255,0.06) !important;
-    border-radius: 50px !important;
-    height: 8px !important;
-}
-[data-testid="stProgressBar"] > div > div {
-    background: linear-gradient(90deg, #2563eb, #7c3aed) !important;
-    border-radius: 50px !important;
-    transition: width 0.8s cubic-bezier(0.4,0,0.2,1) !important;
-}
-
-/* ---- ST.WRITE (age label rows) ---- */
-.stMarkdown p, .stText {
-    color: #cbd5e1;
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
     font-size: 14px;
-    font-family: 'Fira Code', monospace;
-    margin-top: 4px;
 }
 
-/* ---- INFO BOX ---- */
-[data-testid="stInfo"] {
-    background: rgba(6,182,212,0.07) !important;
-    border: 1px solid rgba(6,182,212,0.2) !important;
-    border-radius: 14px !important;
-    color: #67e8f9 !important;
-}
-[data-testid="stInfo"] p {
-    color: #67e8f9 !important;
-    font-family: 'Manrope', sans-serif !important;
+.progress-bg {
+    width: 100%;
+    height: 12px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50px;
+    overflow: hidden;
 }
 
-/* ---- WARNING BOX ---- */
-[data-testid="stWarning"] {
-    background: rgba(245,158,11,0.07) !important;
-    border: 1px solid rgba(245,158,11,0.2) !important;
-    border-left: 4px solid #f59e0b !important;
-    border-radius: 14px !important;
-}
-[data-testid="stWarning"] p {
-    color: #fcd34d !important;
-    font-size: 14px !important;
-    line-height: 1.8 !important;
-    font-family: 'Manrope', sans-serif !important;
-    font-weight: 300 !important;
+.progress-fill {
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg,#3b82f6,#8b5cf6);
 }
 
-/* ---- IMAGE ---- */
-[data-testid="stImage"] img {
-    border-radius: 14px !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-}
-[data-testid="stImage"] div {
-    color: #64748b !important;
-    font-size: 12px !important;
-    font-style: italic !important;
-    text-align: center !important;
-    margin-top: 6px !important;
+/* ---------------- FEATURES ---------------- */
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 18px;
+    margin-top: 15px;
 }
 
-/* ---- SCROLLBAR ---- */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+.feature-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 22px;
+}
 
-/* ---- FOOTER ---- */
+.feature-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-top: 10px;
+    margin-bottom: 8px;
+}
+
+.feature-text {
+    font-size: 14px;
+    color: #94a3b8;
+    line-height: 1.7;
+}
+
+/* ---------------- NOTICE ---------------- */
+
+.notice-box {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-left: 5px solid #f59e0b;
+    border-radius: 18px;
+    padding: 25px;
+    margin-top: 10px;
+}
+
+.notice-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.notice-text {
+    color: #fcd34d;
+    line-height: 1.8;
+    font-size: 15px;
+}
+
+/* ---------------- FOOTER ---------------- */
+
 .footer {
     text-align: center;
     color: #94a3b8;
-    margin-top: 40px;
+    margin-top: 50px;
+    padding-bottom: 30px;
     font-size: 14px;
+}
+
+/* ---------------- RESPONSIVE ---------------- */
+
+@media(max-width: 900px){
+
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .prediction-age {
+        font-size: 55px;
+    }
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- HEADER ----------------
-st.markdown('<div class="title">FairVision AI</div>', unsafe_allow_html=True)
+# ---------------- HERO SECTION ----------------
 
-st.markdown(
-    '<div class="subtitle">Fair & Responsible Age Classification System</div>',
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div class="hero-container">
 
-# ---------------- LAYOUT ----------------
-col1, col2 = st.columns([1, 1])
+<div class="hero-badge">
+🧠 Educational & Research AI System
+</div>
+
+<div class="hero-title">
+FAIRVISION <span class="gradient-text">AI</span>
+</div>
+
+<div class="hero-subtitle">
+Fair & Responsible Age Classification System
+</div>
+
+<div class="hero-tags">
+<div class="tag">9 Age Groups</div>
+<div class="tag">Top-3 Predictions</div>
+<div class="tag">Privacy Safe</div>
+<div class="tag">Responsible AI</div>
+</div>
+
+</div>
+""", unsafe_allow_html=True)
+
+# ---------------- STATS ----------------
+
+st.markdown("""
+<div class="stats-container">
+
+<div class="stat-card">
+<div class="stat-number">9</div>
+<div class="stat-label">AGE GROUPS</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-number">TOP 3</div>
+<div class="stat-label">RANKED PREDICTIONS</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-number">0</div>
+<div class="stat-label">IMAGES STORED</div>
+</div>
+
+</div>
+""", unsafe_allow_html=True)
+
+# ---------------- MAIN LAYOUT ----------------
+
+col1, col2 = st.columns([1,1], gap="large")
 
 # ---------------- LEFT SIDE ----------------
+
 with col1:
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 
-    st.subheader("📤 Upload Face Image")
+    st.markdown("""
+    <div class="section-title">
+    📤 Upload Face Image
+    </div>
+    """, unsafe_allow_html=True)
 
     uploaded_file = st.file_uploader(
-        "Choose an image",
-        type=["jpg", "jpeg", "png"]
+        "Upload",
+        type=["jpg","jpeg","png"],
+        label_visibility="collapsed"
     )
 
     if uploaded_file is not None:
+
         image = Image.open(uploaded_file)
 
-        st.image(
-            image,
-            caption="Uploaded Image",
-            use_container_width=True
+        st.markdown('<div class="image-wrapper">', unsafe_allow_html=True)
+
+        st.image(image, use_container_width=False)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown(
+            f"<div style='text-align:center; color:#94a3b8; font-size:13px; margin-top:10px;'>Uploaded: {uploaded_file.name}</div>",
+            unsafe_allow_html=True
         )
+
+    else:
+        st.info("Please upload a portrait image.")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------- RIGHT SIDE ----------------
+
 with col2:
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 
-    st.subheader("📊 Prediction Results")
+    st.markdown("""
+    <div class="section-title">
+    📊 Prediction Results
+    </div>
+    """, unsafe_allow_html=True)
 
     if uploaded_file is not None:
 
-        # ---------------- DUMMY PREDICTION ----------------
+        with st.spinner("Analyzing image..."):
+            time.sleep(1)
+
         age_groups = [
             "0-2",
             "3-9",
@@ -290,40 +432,108 @@ with col2:
 
         st.markdown(f"""
         <div class="prediction-box">
-            <h2>🎯 Predicted Age Group</h2>
-            <h1>{predicted_age}</h1>
-            <h3>Confidence: {confidence:.2f}%</h3>
+
+        <div class="prediction-label">
+        🎯 Predicted Age Group
+        </div>
+
+        <div class="prediction-age">
+        {predicted_age}
+        </div>
+
+        <div class="prediction-confidence">
+        Confidence: {confidence:.2f}%
+        </div>
+
         </div>
         """, unsafe_allow_html=True)
 
-        st.write("")
-
-        st.subheader("🔝 Top 3 Predictions")
+        st.markdown("""
+        <div style="font-size:18px;font-weight:700;margin-bottom:18px;">
+        🔝 Top 3 Predictions
+        </div>
+        """, unsafe_allow_html=True)
 
         for idx in top3_idx:
-            st.progress(float(probs[idx]))
-            st.write(f"{age_groups[idx]} — {probs[idx]*100:.2f}%")
+
+            percentage = probs[idx] * 100
+
+            st.markdown(f"""
+            <div class="progress-item">
+
+            <div class="progress-label">
+                <span>{age_groups[idx]}</span>
+                <span>{percentage:.2f}%</span>
+            </div>
+
+            <div class="progress-bg">
+                <div class="progress-fill" style="width:{percentage}%"></div>
+            </div>
+
+            </div>
+            """, unsafe_allow_html=True)
 
     else:
         st.info("Upload an image to see predictions.")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- RESPONSIBLE AI ----------------
-st.markdown('<div class="card">', unsafe_allow_html=True)
+# ---------------- FEATURES ----------------
 
-st.subheader("⚖ Responsible AI Notice")
+st.markdown("""
+<div class="features-grid">
 
-st.warning("""
-This AI system is developed for educational and research purposes only.
+<div class="feature-card">
+<div style="font-size:28px;">🎯</div>
+<div class="feature-title">Multi-Class Prediction</div>
+<div class="feature-text">
+Predicts across multiple age groups with confidence scores.
+</div>
+</div>
 
-Predictions may contain inaccuracies or demographic biases.
+<div class="feature-card">
+<div style="font-size:28px;">⚖️</div>
+<div class="feature-title">Responsible AI</div>
+<div class="feature-text">
+Built with fairness, transparency, and ethical AI principles.
+</div>
+</div>
+
+<div class="feature-card">
+<div style="font-size:28px;">🔒</div>
+<div class="feature-title">Privacy Focused</div>
+<div class="feature-text">
+Images are not stored or shared with third-party services.
+</div>
+</div>
+
+</div>
+""", unsafe_allow_html=True)
+
+# ---------------- RESPONSIBLE AI NOTICE ----------------
+
+st.markdown("""
+<div class="notice-box">
+
+<div class="notice-title">
+⚠ Responsible AI Notice
+</div>
+
+<div class="notice-text">
+
+This AI system is developed for educational and research purposes only.<br><br>
+
+Predictions may contain inaccuracies or demographic biases.<br>
+
 The system should not be used for critical decision-making.
-""")
 
-st.markdown('</div>', unsafe_allow_html=True)
+</div>
+
+</div>
+""", unsafe_allow_html=True)
 
 # ---------------- FOOTER ----------------
+
 st.markdown("""
 <div class="footer">
 Made with ❤️ using Streamlit | FairVision AI Project
